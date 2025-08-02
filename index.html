@@ -3,133 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Katalog Produk Ready Stock</title>
-  <link rel="stylesheet" href="cart.css">
+  <title>Katalog Ready Stock</title>
+  <link rel="stylesheet" href="cart.css" />
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: url('img/bg-tropis.jpg') no-repeat center center fixed;
-      background-size: cover;
+      background: linear-gradient(#fffced, #e0ffe0);
       margin: 0;
       padding: 0;
     }
 
-    .container {
-      background-color: rgba(255, 255, 255, 0.95);
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
+    header {
+      background-color: #ffd700;
+      color: #333;
+      padding: 1em;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 1em;
+    }
+
+    input[type="text"], select {
+      padding: 0.5em;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #produk-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 1em;
+    }
+
+    .produk-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+      padding: 1em;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .produk-card:hover {
+      transform: scale(1.02);
+    }
+
+    .produk-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
       border-radius: 10px;
     }
 
-    h1 {
-      text-align: center;
-      color: #2e7d32;
-      margin-bottom: 1rem;
+    .produk-card h3 {
+      font-size: 1.1em;
+      margin: 0.5em 0;
     }
 
-    nav {
-      text-align: center;
-      margin-bottom: 1.5rem;
+    .produk-card p {
+      margin: 0.2em 0;
     }
 
-    nav a {
-      margin: 0 1rem;
-      color: #00796b;
-      font-weight: bold;
+    .produk-card button {
+      margin-top: 0.5em;
+      padding: 0.5em 1em;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #keranjang-icon {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #28a745;
+      color: white;
+      padding: 0.6em 1em;
+      border-radius: 50px;
+      font-size: 1em;
+      z-index: 1000;
       text-decoration: none;
     }
 
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    .search-filter {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .product-card {
-      background-color: #ffffff;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .product-card img {
-      max-width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-    }
-
-    .product-card h3 {
-      font-size: 1.1rem;
-      margin: 0.5rem 0 0.3rem;
-      color: #388e3c;
-    }
-
-    .product-card p {
-      margin: 0.3rem 0;
-      font-size: 0.9rem;
-    }
-
-    .product-card select,
-    .product-card button {
-      margin-top: 0.5rem;
+    #keranjang-icon:hover {
+      background: #218838;
     }
 
     footer {
       text-align: center;
-      font-size: 0.9rem;
-      padding: 1rem;
+      padding: 1em;
+      background: #f1f1f1;
+      margin-top: 2em;
+      font-size: 0.9em;
       color: #666;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Katalog Produk Ready Stock</h1>
+  <header>
+    <h1>Katalog Produk - Ready Stock</h1>
+  </header>
 
-    <nav>
-      <a href="index.html">Ready Stock</a>
-      <a href="preorder.html">Preorder</a>
-      <a href="qris.html">QRIS</a>
-    </nav>
+  <a id="keranjang-icon" href="keranjang.html">🛒 (0)</a>
 
-    <div class="search-filter">
-      <input type="text" id="searchInput" placeholder="Cari produk...">
-      <select id="categoryFilter">
-        <option value="">Semua Kategori</option>
-      </select>
-    </div>
+  <div class="toolbar">
+    <input type="text" id="search-bar" placeholder="Cari produk...">
+    <select id="filter-kategori">
+      <option value="semua">Semua Kategori</option>
+      <option value="Keripik">Keripik</option>
+      <option value="Camilan">Camilan</option>
+      <!-- Tambahkan kategori lainnya sesuai kebutuhan -->
+    </select>
+  </div>
 
-    <div class="product-grid" id="productContainer">
-      <!-- Produk akan dimuat di sini -->
-    </div>
+  <div id="produk-container">
+    <!-- Produk akan ditampilkan di sini -->
   </div>
 
   <footer>
-    &copy; 2025 Barokah1945 - Katalog Ready Stock
+    &copy; 2025 Barokah1945. All rights reserved.
   </footer>
 
   <script src="app.js"></script>
   <script>
-    // Panggil fungsi loadReadyStock di halaman ready stock
     loadReadyStock();
   </script>
 </body>
