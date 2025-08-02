@@ -1,95 +1,155 @@
-const sheetID = "15g0UFq0fLNbyORzKiITkLzlRduUSvi6TEFhVqoQOedM";
-const sheetGIDs = {
-  ready: "1044556738",      // Sheet1
-  preorder: "1798429486"    // Sheet2
-};
+// === KONFIGURASI GOOGLE SHEETS ===
+const SHEET_ID = '15g0UFq0fLNbyORzKiITkLzlRduUSvi6TEFhVqoQOedM';
+const READY_STOCK_SHEET = 'Sheet1';
+const PREORDER_SHEET = 'Sheet2';
+const SHEETS_API = 'https://opensheet.elk.sh';
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+// === DOM ELEMEN ===
+const produkContainer = document.getElementById('produk-container');
+const kategoriFilter = document.getElementById('kategori-filter');
+const hariKirimFilter = document.getElementById('hari-filter');
+const searchInput = document.getElementById('search-input');
 
-function loadProducts(mode = "ready") {
-  const gid = sheetGIDs[mode];
-  const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&gid=${gid}`;
-  fetch(url)
-    .then(res => res.text())
-    .then(data => {
-      const json = JSON.parse(data.substr(47).slice(0, -2));
-      const headers = json.table.cols.map(col => col.label);
-      const rows = json.table.rows.map(row =>
-        row.c.reduce((obj, cell, i) => {
-          obj[headers[i]] = cell ? cell.v : "";
-          return obj;
-        }, {})
-      );
-      const aktifRows = rows.filter(row => row["Aktif"] === true || row["Aktif"] === "TRUE");
-      displayProducts(aktifRows, mode);
-      initFilters(aktifRows, mode);
-    });
+let semuaProduk = [];
+let keranjang = JSON.parse(localStorage.getItem('keranjang')) || [];
+
+// === LOAD PRODUK ===
+async function loadProduk(sheetName, mode = 'ready') {
+  const url = `${SHEETS_API}/${SHEET_ID}/${sheetName}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  // Filter berdasarkan "Aktif"
+  semuaProduk = data.filter(p => p.Aktif.toLowerCase() === 'true');
+
+  tampilkanFilterKategori();
+  tampilkanProduk(semuaProduk, mode);
 }
 
-function displayProducts(products, mode) {
-  const container = document.getElementById("product-list");
-  container.innerHTML = "";
-  const keyword = (document.getElementById("searchInput")?.value || "").toLowerCase();
-  const kategoriFilter = document.getElementById("filterKategori")?.value || "";
-  const hariFilter = document.getElementById("filterHari")?.value || "";
+// === TAMPILKAN PRODUK ===
+function tampilkanProduk(data, mode) {
+  produkContainer.innerHTML = '';
 
-  const filtered = products.filter(p => {
-    const nameMatch = p.Nama?.toLowerCase().includes(keyword);
-    const kategoriMatch = kategoriFilter ? p.Kategori === kategoriFilter : true;
-    const hariMatch = hariFilter ? p["Hari kirim"] === hariFilter : true;
-    return nameMatch && kategoriMatch && hariMatch;
-  });
+  data.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'produk-card';
 
-  for (const p of filtered) {
-    const div = document.createElement("div");
-    div.className = "product";
-    div.innerHTML = `
-      <img src="${p.FotoURL}" alt="${p.Nama}" />
-      <div class="product-info">
-        <h3>${p.Nama}</h3>
-        <p>${p.Diskripsi}</p>
-        <p class="price">Rp ${formatRupiah(p.Harga)}</p>
-        <button onclick="addToCart('${p.SKU}', '${p.Nama}', ${p.Harga}, '${mode}')">+ Keranjang</button>
+    const hargaFormat = parseInt(item.Harga).toLocaleString('id-ID');
+
+    card.innerHTML = `
+      <img src="${item.FotoURL}" alt="${item.Nama}" onerror="this.src='img/noimage.jpg'">
+      <h3>${item.Nama}</h3>
+      <p>${item.Diskripsi || ''}</p>
+      <p class="harga">Rp ${hargaFormat}</p>
+      ${mode === 'preorder' ? `<p><strong>Hari Kirim:</strong> ${item['Hari kirim']}</p>` : ''}
+      <div class="input-beli">
+        <input type="number" min="1" value="1" id="qty-${item.SKU}" />
+        <button onclick="tambahKeKeranjang('${item.SKU}', '${item.Nama}', ${item.Harga}, '${mode}')">+ Keranjang</button>
       </div>
     `;
-    container.appendChild(div);
-  }
+
+    produkContainer.appendChild(card);
+  });
 }
 
-function formatRupiah(angka) {
-  return parseInt(angka).toLocaleString("id-ID");
+// === TAMPILKAN FILTER KATEGORI ===
+function tampilkanFilterKategori() {
+  const kategoriUnik = [...new Set(semuaProduk.map(p => p.Kategori))];
+
+  kategoriFilter.innerHTML = `
+    <option value="">Semua Kategori</option>
+    ${kategoriUnik.map(k => `<option value="${k}">${k}</option>`).join('')}
+  `;
 }
 
-function addToCart(sku, nama, harga, mode) {
-  const existing = cart.find(item => item.sku === sku && item.mode === mode);
-  if (existing) {
-    existing.qty += 1;
+// === FILTER PRODUK ===
+kategoriFilter?.addEventListener('change', filterProduk);
+hariKirimFilter?.addEventListener('change', filterProduk);
+searchInput?.addEventListener('input', filterProduk);
+
+function filterProduk() {
+  const kategori = kategoriFilter?.value;
+  const hari = hariKirimFilter?.value?.toLowerCase();
+  const cari = searchInput?.value?.toLowerCase();
+
+  let hasil = semuaProduk.filter(p =>
+    (!kategori || p.Kategori === kategori) &&
+    (!hari || p['Hari kirim']?.toLowerCase() === hari) &&
+    (!cari || p.Nama?.toLowerCase().includes(cari))
+  );
+
+  const mode = window.location.pathname.includes('preorder') ? 'preorder' : 'ready';
+  tampilkanProduk(hasil, mode);
+}
+
+// === KERANJANG ===
+function tambahKeKeranjang(sku, nama, harga, mode) {
+  const qty = parseInt(document.getElementById(`qty-${sku}`).value);
+  const index = keranjang.findIndex(item => item.sku === sku);
+
+  if (index > -1) {
+    keranjang[index].qty += qty;
   } else {
-    cart.push({ sku, nama, harga, qty: 1, mode });
+    keranjang.push({ sku, nama, harga, qty, mode });
   }
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert("Produk ditambahkan ke keranjang");
+
+  localStorage.setItem('keranjang', JSON.stringify(keranjang));
+  alert(`Ditambahkan ke keranjang: ${nama}`);
 }
 
-function initFilters(data, mode) {
-  if (mode === "preorder") {
-    const kategori = [...new Set(data.map(p => p.Kategori).filter(Boolean))];
-    const hari = [...new Set(data.map(p => p["Hari kirim"]).filter(Boolean))];
+// === KERANJANG PAGE ===
+function tampilkanKeranjang() {
+  const keranjangList = document.getElementById('keranjang-list');
+  const totalElem = document.getElementById('total-harga');
+  const qrisBtn = document.getElementById('qris-btn');
+  const waBtn = document.getElementById('wa-btn');
 
-    const kategoriSelect = document.getElementById("filterKategori");
-    const hariSelect = document.getElementById("filterHari");
+  if (!keranjangList) return;
 
-    kategoriSelect.innerHTML = '<option value="">Semua Kategori</option>' +
-      kategori.map(k => `<option value="${k}">${k}</option>`).join("");
-    hariSelect.innerHTML = '<option value="">Semua Hari Kirim</option>' +
-      hari.map(h => `<option value="${h}">${h}</option>`).join("");
+  keranjangList.innerHTML = '';
+  let total = 0;
 
-    kategoriSelect.onchange = () => displayProducts(data, mode);
-    hariSelect.onchange = () => displayProducts(data, mode);
-  }
+  keranjang.forEach(item => {
+    const subtotal = item.harga * item.qty;
+    total += subtotal;
 
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput) {
-    searchInput.oninput = () => displayProducts(data, mode);
-  }
+    const li = document.createElement('li');
+    li.innerHTML = `
+      ${item.nama} (${item.qty} x Rp ${item.harga.toLocaleString()}) = Rp ${subtotal.toLocaleString()}
+      <button onclick="hapusItem('${item.sku}')">X</button>
+    `;
+    keranjangList.appendChild(li);
+  });
+
+  totalElem.textContent = `Total: Rp ${total.toLocaleString()}`;
+
+  // Buat teks untuk WA
+  const teksWA = keranjang.map(i =>
+    `- ${i.nama} (${i.qty}x): Rp ${(i.harga * i.qty).toLocaleString()}`
+  ).join('\n');
+
+  const pesan = `Halo, saya ingin pesan:\n${teksWA}\nTotal: Rp ${total.toLocaleString()}`;
+  const encoded = encodeURIComponent(pesan);
+
+  waBtn.href = `https://wa.me/6281234567890?text=${encoded}`;
 }
+
+// === HAPUS ITEM ===
+function hapusItem(sku) {
+  keranjang = keranjang.filter(i => i.sku !== sku);
+  localStorage.setItem('keranjang', JSON.stringify(keranjang));
+  tampilkanKeranjang();
+}
+
+// === INISIALISASI ===
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.includes('preorder')) {
+    loadProduk(PREORDER_SHEET, 'preorder');
+  } else if (window.location.pathname.includes('index') || window.location.pathname === '/') {
+    loadProduk(READY_STOCK_SHEET, 'ready');
+  }
+
+  if (document.getElementById('keranjang-list')) {
+    tampilkanKeranjang();
+  }
+});
