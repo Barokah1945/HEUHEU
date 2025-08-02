@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Keranjang Belanja</title>
+  <link rel="stylesheet" href="cart.css" />
+  <style>
+    .cart-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .checkout-btns {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .checkout-btns a {
+      background-color: #009e60;
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .checkout-btns a:hover {
+      background-color: #007f4a;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Keranjang Belanja</h1>
+  </header>
+  <div class="container cart-container">
+    <div id="cart-items"></div>
+    <div id="cart-total" style="text-align: right; font-size: 1.2rem;"></div>
+    <div class="checkout-btns">
+      <a href="qris.html">Bayar via QRIS</a>
+      <a id="wa-checkout" href="#" target="_blank">Konfirmasi via WhatsApp</a>
+    </div>
+    <div style="text-align: center; margin-top: 1rem;">
+      <a href="index.html">← Kembali ke Katalog</a>
+    </div>
+  </div>
+  <footer>
+    &copy; 2025 HEUHEU Store - Keranjang Belanja
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
