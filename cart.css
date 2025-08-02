@@ -1,47 +1,118 @@
 body {
   font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom, #e0f8e0, #ffffff);
   margin: 0;
   padding: 0;
-  background: #fffbe7;
   color: #333;
 }
+
 header {
-  background: #ffcc70;
-  padding: 1em;
+  background-color: #009e60;
+  color: white;
+  padding: 1rem;
   text-align: center;
+  font-size: 1.4rem;
 }
-nav a {
-  margin: 0 1em;
-  text-decoration: none;
-  color: #222;
+
+.container {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 1rem;
 }
+
+.search-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  justify-content: space-between;
+}
+
+.search-filter input,
+.search-filter select {
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  min-width: 180px;
+}
+
 #product-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1em;
-  padding: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
 }
+
 .product {
-  background: #fff;
   border: 1px solid #ddd;
-  padding: 1em;
-  border-radius: 6px;
+  border-radius: 10px;
+  background-color: #fefefe;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
 }
+
+.product:hover {
+  transform: scale(1.02);
+}
+
 .product img {
   width: 100%;
-  border-radius: 4px;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
 }
-button {
-  background: #ff914d;
-  border: none;
+
+.product-info {
+  padding: 0.8rem;
+}
+
+.product-info h3 {
+  margin: 0.2rem 0;
+  font-size: 1.1rem;
+}
+
+.product-info p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+}
+
+.price {
+  color: #e67e22;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.product-info button {
+  background-color: #009e60;
   color: white;
-  padding: 0.5em 1em;
-  border-radius: 4px;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-top: 0.6rem;
+  border-radius: 6px;
   cursor: pointer;
+  width: 100%;
+  font-size: 0.9rem;
 }
-#cart {
-  background: #fff3c4;
-  padding: 1em;
-  position: sticky;
-  bottom: 0;
+
+.product-info button:hover {
+  background-color: #007f4a;
+}
+
+.cart-summary {
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #e9fce9;
+  border: 1px solid #bde5bd;
+  border-radius: 10px;
+}
+
+.cart-summary h3 {
+  margin-top: 0;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #009e60;
+  color: white;
+  margin-top: 3rem;
 }
