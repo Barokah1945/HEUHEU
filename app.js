@@ -1,117 +1,95 @@
-
-const sheetId = "15g0UFq0fLNbyORzKiITkLzlRduUSvi6TEFhVqoQOedM";
-const sheetReadyGid = "1044556738";
-const sheetPreorderGid = "0";
-
-const getSheetURL = (isPreorder) => {
-  const gid = isPreorder ? sheetPreorderGid : sheetReadyGid;
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&gid=${gid}`;
+const sheetID = "15g0UFq0fLNbyORzKiITkLzlRduUSvi6TEFhVqoQOedM";
+const sheetGIDs = {
+  ready: "1044556738",      // Sheet1
+  preorder: "1798429486"    // Sheet2
 };
 
-async function fetchProducts() {
-  const res = await fetch(getSheetURL(isPreorder));
-  const text = await res.text();
-  const json = JSON.parse(text.substr(47).slice(0, -2));
-  const rows = json.table.rows;
-  const headers = json.table.cols.map(c => c.label.toLowerCase());
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  const products = rows.map(row => {
-    const item = {};
-    headers.forEach((h, i) => {
-      item[h] = row.c[i] ? row.c[i].v : "";
+function loadProducts(mode = "ready") {
+  const gid = sheetGIDs[mode];
+  const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&gid=${gid}`;
+  fetch(url)
+    .then(res => res.text())
+    .then(data => {
+      const json = JSON.parse(data.substr(47).slice(0, -2));
+      const headers = json.table.cols.map(col => col.label);
+      const rows = json.table.rows.map(row =>
+        row.c.reduce((obj, cell, i) => {
+          obj[headers[i]] = cell ? cell.v : "";
+          return obj;
+        }, {})
+      );
+      const aktifRows = rows.filter(row => row["Aktif"] === true || row["Aktif"] === "TRUE");
+      displayProducts(aktifRows, mode);
+      initFilters(aktifRows, mode);
     });
-    return item;
-  });
-
-  return products.filter(p => p["aktif"] && p["aktif"].toString().toLowerCase() === "true");
 }
 
-function renderProducts(products) {
+function displayProducts(products, mode) {
   const container = document.getElementById("product-list");
   container.innerHTML = "";
+  const keyword = (document.getElementById("searchInput")?.value || "").toLowerCase();
+  const kategoriFilter = document.getElementById("filterKategori")?.value || "";
+  const hariFilter = document.getElementById("filterHari")?.value || "";
 
-  const kategoriSet = new Set();
-  const hariSet = new Set();
+  const filtered = products.filter(p => {
+    const nameMatch = p.Nama?.toLowerCase().includes(keyword);
+    const kategoriMatch = kategoriFilter ? p.Kategori === kategoriFilter : true;
+    const hariMatch = hariFilter ? p["Hari kirim"] === hariFilter : true;
+    return nameMatch && kategoriMatch && hariMatch;
+  });
 
-  products.forEach((p, i) => {
-    const el = document.createElement("div");
-    el.className = "product";
-    el.innerHTML = `
-      <img src="${p.gambar}" alt="${p.nama}" />
-      <h3>${p.nama}</h3>
-      <p>Harga: Rp ${p.harga}</p>
-      ${isPreorder ? `<p>Hari Kirim: ${p.hari_kirim}</p>` : ""}
-      <input type="number" min="1" value="1" id="qty-${i}" />
-      <button onclick="addToCart(${i})">Tambah</button>
+  for (const p of filtered) {
+    const div = document.createElement("div");
+    div.className = "product";
+    div.innerHTML = `
+      <img src="${p.FotoURL}" alt="${p.Nama}" />
+      <div class="product-info">
+        <h3>${p.Nama}</h3>
+        <p>${p.Diskripsi}</p>
+        <p class="price">Rp ${formatRupiah(p.Harga)}</p>
+        <button onclick="addToCart('${p.SKU}', '${p.Nama}', ${p.Harga}, '${mode}')">+ Keranjang</button>
+      </div>
     `;
-    container.appendChild(el);
+    container.appendChild(div);
+  }
+}
 
-    kategoriSet.add(p.kategori);
-    hariSet.add(p.hari_kirim);
-  });
+function formatRupiah(angka) {
+  return parseInt(angka).toLocaleString("id-ID");
+}
 
-  if (isPreorder) {
-    populateFilter("filter-kategori", kategoriSet);
-    populateFilter("filter-hari", hariSet);
+function addToCart(sku, nama, harga, mode) {
+  const existing = cart.find(item => item.sku === sku && item.mode === mode);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ sku, nama, harga, qty: 1, mode });
+  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Produk ditambahkan ke keranjang");
+}
+
+function initFilters(data, mode) {
+  if (mode === "preorder") {
+    const kategori = [...new Set(data.map(p => p.Kategori).filter(Boolean))];
+    const hari = [...new Set(data.map(p => p["Hari kirim"]).filter(Boolean))];
+
+    const kategoriSelect = document.getElementById("filterKategori");
+    const hariSelect = document.getElementById("filterHari");
+
+    kategoriSelect.innerHTML = '<option value="">Semua Kategori</option>' +
+      kategori.map(k => `<option value="${k}">${k}</option>`).join("");
+    hariSelect.innerHTML = '<option value="">Semua Hari Kirim</option>' +
+      hari.map(h => `<option value="${h}">${h}</option>`).join("");
+
+    kategoriSelect.onchange = () => displayProducts(data, mode);
+    hariSelect.onchange = () => displayProducts(data, mode);
   }
 
-  window.products = products;
-}
-
-function populateFilter(id, values) {
-  const el = document.getElementById(id);
-  values.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    el.appendChild(opt);
-  });
-
-  el.addEventListener("change", () => {
-    const filtered = window.products.filter(p => {
-      const kategoriMatch = document.getElementById("filter-kategori").value === "" || p.kategori === document.getElementById("filter-kategori").value;
-      const hariMatch = document.getElementById("filter-hari").value === "" || p.hari_kirim === document.getElementById("filter-hari").value;
-      return kategoriMatch && hariMatch;
-    });
-    renderProducts(filtered);
-  });
-}
-
-const cart = [];
-
-function addToCart(index) {
-  const qty = parseInt(document.getElementById(`qty-${index}`).value);
-  if (qty <= 0) return;
-  const p = window.products[index];
-  cart.push({ ...p, qty });
-  updateCart();
-}
-
-function updateCart() {
-  const el = document.getElementById("cart");
-  if (cart.length === 0) {
-    el.innerHTML = "<p>Keranjang kosong</p>";
-    return;
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.oninput = () => displayProducts(data, mode);
   }
-
-  let html = "<h3>Keranjang</h3><ul>";
-  cart.forEach((item, i) => {
-    html += `<li>${item.nama} x ${item.qty}</li>`;
-  });
-  html += "</ul>";
-
-  html += `
-    <button onclick="checkoutWA()">Konfirmasi WA</button>
-    <a href="qris.html"><button>Bayar QRIS</button></a>
-  `;
-
-  el.innerHTML = html;
 }
-
-function checkoutWA() {
-  const items = cart.map(item => `${item.nama} x ${item.qty}`).join("%0A");
-  const message = `Halo, saya ingin pesan:%0A${items}`;
-  window.open(`https://wa.me/?text=${message}`, "_blank");
-}
-
-fetchProducts().then(renderProducts);
