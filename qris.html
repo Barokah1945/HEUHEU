@@ -3,48 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pembayaran QRIS</title>
+  <title>QRIS Pembayaran</title>
   <link rel="stylesheet" href="cart.css" />
   <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('img/bg-tropis.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
     .qris-container {
-      text-align: center;
+      background-color: rgba(255, 255, 255, 0.95);
       padding: 2rem;
-    }
-    .qris-container img {
-      max-width: 320px;
-      width: 90%;
-      border: 5px solid #009e60;
       border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    .qris-container h2 {
-      color: #009e60;
+
+    .qris-container h1 {
+      color: #e65100;
+      margin-bottom: 1rem;
     }
-    .back-btn {
-      margin-top: 2rem;
+
+    .qris-container img {
+      width: 300px;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
+    .qris-container p {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .btn-kembali {
       display: inline-block;
-      padding: 0.6rem 1.2rem;
-      background-color: #009e60;
-      color: white;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: #00796b;
+      color: #fff;
       text-decoration: none;
-      border-radius: 6px;
+      border-radius: 5px;
     }
-    .back-btn:hover {
-      background-color: #007f4a;
+
+    .btn-kembali:hover {
+      background-color: #004d40;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Pembayaran via QRIS</h1>
-  </header>
-  <div class="container qris-container">
-    <h2>Scan QRIS untuk Melanjutkan Pembayaran</h2>
-    <img src="qris.png.jpg" alt="QRIS Code" />
-    <p>Setelah membayar, mohon konfirmasi ke WhatsApp kami.</p>
-    <a href="index.html" class="back-btn">Kembali ke Beranda</a>
+  <div class="qris-container">
+    <h1>Pembayaran QRIS</h1>
+    <img src="img/qris-barcode.jpg" alt="QRIS Barcode" />
+    <p>Silakan scan kode QR di atas menggunakan aplikasi pembayaran Anda (OVO, Gopay, ShopeePay, dll).</p>
+    <a href="index.html" class="btn-kembali">Kembali ke Beranda</a>
   </div>
-  <footer>
-    &copy; 2025 HEUHEU Store - QRIS Payment
-  </footer>
 </body>
 </html>
