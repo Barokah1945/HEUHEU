@@ -1,16 +1,50 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>QRIS Pembayaran</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pembayaran QRIS</title>
+  <link rel="stylesheet" href="cart.css" />
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; background: #f8f8f8; }
-    img { max-width: 300px; margin-top: 20px; }
+    .qris-container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .qris-container img {
+      max-width: 320px;
+      width: 90%;
+      border: 5px solid #009e60;
+      border-radius: 10px;
+    }
+    .qris-container h2 {
+      color: #009e60;
+    }
+    .back-btn {
+      margin-top: 2rem;
+      display: inline-block;
+      padding: 0.6rem 1.2rem;
+      background-color: #009e60;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+    .back-btn:hover {
+      background-color: #007f4a;
+    }
   </style>
 </head>
 <body>
-  <h2>Pembayaran via QRIS</h2>
-  <p>Silakan scan barcode di bawah ini untuk menyelesaikan pembayaran.</p>
-  <img src="qris.png" alt="QRIS" />
+  <header>
+    <h1>Pembayaran via QRIS</h1>
+  </header>
+  <div class="container qris-container">
+    <h2>Scan QRIS untuk Melanjutkan Pembayaran</h2>
+    <img src="qris.png.jpg" alt="QRIS Code" />
+    <p>Setelah membayar, mohon konfirmasi ke WhatsApp kami.</p>
+    <a href="index.html" class="back-btn">Kembali ke Beranda</a>
+  </div>
+  <footer>
+    &copy; 2025 HEUHEU Store - QRIS Payment
+  </footer>
 </body>
 </html>
